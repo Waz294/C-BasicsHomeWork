@@ -50,6 +50,58 @@ namespace Lesson2
             Console.WriteLine($"Расписание для офиса {officeName}: {workDays}");
         }
 
+        public static void OfficeScheduleAlternative(int inputMask, string officeName)
+        {
+            Func<string, bool> InMiddle = str =>
+            {
+                return str.Length > 0 && str.Substring(str.Length - 3, 3).Contains("по");
+            };
+
+            Func<int, int, bool> IsOneWorkDay = (today, seqStart) =>
+            {
+                return seqStart >= 0 && today - 1 == seqStart;
+            };
+
+            string workDays = "";
+
+            int seqStart = -1;
+            int[] days = (int[])Enum.GetValues(typeof(DayOfWeek));
+            days = days.Reverse().ToArray();
+            for (var i = 0; i < days.Count(); i++)
+            {
+                if ((inputMask & days[i]) == days[i])
+                {
+                    if (workDays.Length == 0)
+                    {
+                        workDays += "с " + (DayOfWeek)days[i] + " по ";
+                        seqStart = i;
+                    }
+                    else if (workDays.Length > 0 && !InMiddle(workDays))
+                    {
+                        workDays += "с " + (DayOfWeek)days[i] + " по ";
+                        seqStart = i;
+                    }
+
+                    if (i == days.Count() - 1)
+                    {
+                        if(IsOneWorkDay(i, seqStart))
+                            workDays = workDays.Remove(workDays.Length - ("c " + (DayOfWeek)days[i] + " по ").Length);
+                        workDays += (DayOfWeek)days[i];
+                    }
+                }
+                else if (InMiddle(workDays))
+                {
+                    if(IsOneWorkDay(i, seqStart))
+                    {
+                        workDays = workDays.Remove(workDays.Length - ("c " + (DayOfWeek)days[seqStart] + " по ").Length);
+                    }
+
+                    workDays += (DayOfWeek)days[i - 1] + " ";
+                }
+            }
+            Console.WriteLine($"Расписание для офиса {officeName}: {workDays}");
+        }
+
         static void Main(string[] args)
         {
             //1
@@ -110,7 +162,7 @@ namespace Lesson2
             {
                 Console.WriteLine("Номер месяца нечетный.");
             }
-            
+
             //5
             var winterMonths = new int[] { 1, 2, 12 };
             if (winterMonths.Contains(monthNumber) && avgTemperature > 0)
@@ -121,14 +173,14 @@ namespace Lesson2
 
             Console.WriteLine("\n4.");
             //4
-            var products = new Dictionary<string, double>() { 
+            var products = new Dictionary<string, double>() {
                     { "Хлеб", 56.5 },
                     { "Молоко", 75 },
                     { "Яйца", 82.5 }
             };
 
             double sum = 0;
-            foreach(var product in products)
+            foreach (var product in products)
             {
                 sum += product.Value;
             }
@@ -155,10 +207,17 @@ namespace Lesson2
 
             Console.WriteLine("\n6.");
             //6
+            //Вариация, как нагляднее, по-моему
             var workDays = 0b1111100;
             var officeName = "test";
             OfficeSchedule(workDays, officeName);
             OfficeSchedule(0b1110110, "strange office");
+
+            //Вариация, как в примере
+            OfficeScheduleAlternative(0b1110110, "strange office1");
+            OfficeScheduleAlternative(0b1010101, "strange office2");
+            OfficeScheduleAlternative(0b1110111, "strange office3");
+            OfficeScheduleAlternative(0b0110111, "strange office4");
         }
     }
 }
