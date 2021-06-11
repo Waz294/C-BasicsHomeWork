@@ -111,7 +111,8 @@ namespace Lesson7
             {
                 case Direction.Horizontal:
                     {
-                        for (var i = y; i < winLength; i++)
+                        var max = y + winLength >= Size ? Size : y + winLength;
+                        for (var i = y; i < max; i++)
                         {
                             if (field[x, i] == sym)
                             {
@@ -122,7 +123,8 @@ namespace Lesson7
                     }
                 case Direction.Vertical:
                     {
-                        for (var i = x; i < winLength; i++)
+                        var max = x + winLength >= Size ? Size : x + winLength;
+                        for (var i = x; i < max; i++)
                         {
                             if (field[i, y] == sym)
                             {
@@ -131,9 +133,11 @@ namespace Lesson7
                         }
                         break;
                     }
-                case Direction.FirstDiagonal:
+                case Direction.FirstDiagonalDown:
                     {
-                        for (int i = 0, j = 0; i < winLength && j < winLength; i++, j++)
+                        var maxX = x + winLength >= Size ? Size : x + winLength;
+                        var maxY = y + winLength >= Size ? Size : y + winLength;
+                        for (int i = 0, j = 0; i < maxX && j < maxY; i++, j++)
                         {
                             if (field[i, j] == sym)
                             {
@@ -143,9 +147,36 @@ namespace Lesson7
 
                         break;
                     }
-                case Direction.SecondDiagonal:
+                case Direction.FirstDiagonalUp:
                     {
-                        for (int i = 0, j = winLength - 1; i < winLength && j >= 0; i++, j--)
+                        var min = Size - winLength > 0 ? Size - winLength : 0;
+                        for (int i = Size - 1, j = Size - 1; i >= min && j >= min; i--, j--)
+                        {
+                            if (field[i, j] == sym)
+                            {
+                                sequenceSize++;
+                            }
+                        }
+
+                        break;
+                    }
+                case Direction.SecondDiagonalDown:
+                    {
+                        var min = Size - winLength > 0 ? Size - winLength : 0;
+                        for (int i = 0, j = Size - 1; i < winLength && j >= min; i++, j--)
+                        {
+                            if (field[i, j] == sym)
+                            {
+                                sequenceSize++;
+                            }
+                        }
+
+                        break;
+                    }
+                case Direction.SecondDiagonalUp:
+                    {
+                        var min = Size - winLength > 0 ? Size - winLength : 0;
+                        for (int i = Size - 1, j = 0; i >= min && j < winLength; i--, j++)
                         {
                             if (field[i, j] == sym)
                             {

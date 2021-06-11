@@ -26,80 +26,39 @@ namespace Lesson7
 
         private (int, int) GetBestMove()
         {
-            var field = Consts.field.GetField;
             var winLength = Consts.field.winLength;
             var Size = Consts.field.Size;
 
-            int x, y;
-            Direction dir;
+            var enemySequences = GetWinSequences(winLength, Size, enemySymbol);
 
-            (x, y, dir) = GetWinSequence(winLength, Size, enemySymbol);
-
-            if (x == -1 || y == -1)
+            if (enemySequences.Count == 0)
             {
-                (x, y, dir) = GetWinSequence(winLength, Size, Symbol);
-            }
+                var winSeq = GetWinSequence(winLength, Size, Symbol);
 
-            if (x != -1 && y != -1)
-            {
-                switch (dir)
+                if (winSeq.startX != -1 && winSeq.startY != -1)
                 {
-                    case Direction.Horizontal:
-                        {
-                            for (var i = y; i < winLength; i++)
-                            {
-                                if (field[x, i] == Consts.field.EmptySymbol)
-                                {
-                                    return (x, i);
-                                }
-                            }
-                            break;
-                        }
-                    case Direction.Vertical:
-                        {
-                            for (var i = x; i < winLength; i++)
-                            {
-                                if (field[i, y] == Consts.field.EmptySymbol)
-                                {
-                                    return (i, y);
-                                }
-                            }
-                            break;
-                        }
-                    case Direction.FirstDiagonal:
-                        {
-                            for (int i = 0, j = 0; i < winLength && j < winLength; i++, j++)
-                            {
-                                if (field[i, j] == Consts.field.EmptySymbol)
-                                {
-                                    return (i, j);
-                                }
-                            }
-
-                            break;
-                        }
-                    case Direction.SecondDiagonal:
-                        {
-                            for (int i = 0, j = winLength - 1; i < winLength && j >= 0; i++, j--)
-                            {
-                                if (field[i, j] == Consts.field.EmptySymbol)
-                                {
-                                    return (i, j);
-                                }
-                            }
-
-                            break;
-                        }
+                    return GetAINextPosition(winSeq.startX, winSeq.startY, winSeq.dir);
                 }
             }
+            else
+            {
+                foreach(var seq in enemySequences)
+                {
+                    var res = GetAINextPosition(seq.startX, seq.startY, seq.dir);
 
-            x = Consts.random.Next(0, Size);
-            y = Consts.random.Next(0, Size);
+                    if(res.Item1 != -1 && res.Item2 != -1)
+                    {
+                        return res;
+                    }
+                }
+            }    
+
+            var x = Consts.random.Next(0, Size);
+            var y = Consts.random.Next(0, Size);
 
             return (x, y);
         }
-
-        private (int, int, Direction) GetWinSequence(int winLength, int Size, char symbol)
+        private Sequence GetWinSequence(int winLength, int Size, char symbol)
         {
             for (var i = 0; i < Size; i++)
             {
@@ -107,17 +66,143 @@ namespace Lesson7
                 {
                     foreach (var dir in (Direction[])Enum.GetValues(typeof(Direction)))
                     {
-                        var enemyLength = Consts.field.getSequenceSize(dir, enemySymbol, i, j);
+                        var seqLength = Consts.field.getSequenceSize(dir, enemySymbol, i, j);
 
-                        if (enemyLength == winLength - Consts.AI_CHECK_LENGTH)
+                        if (seqLength == winLength - Consts.AI_CHECK_LENGTH)
                         {
-                            return (i, j, dir);
+                            return new Sequence(i, j, dir);
                         }
                     }
                 }
             }
 
-            return (-1, -1, Direction.Horizontal);
+            return new Sequence(-1, -1, Direction.Horizontal);
+        }
+
+        private List<Sequence> GetWinSequences(int winLength, int Size, char symbol)
+        {
+            var result = new List<Sequence>();
+            for (var i = 0; i < Size; i++)
+            {
+                for (var j = 0; j < Size; j++)
+                {
+                    foreach (var dir in (Direction[])Enum.GetValues(typeof(Direction)))
+                    {
+                        var seqLength = Consts.field.getSequenceSize(dir, enemySymbol, i, j);
+
+                        if (seqLength == winLength - Consts.AI_CHECK_LENGTH)
+                        {
+                            result.Add(new Sequence(i, j, dir));
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private (int, int) GetAINextPosition(int x, int y, Direction dir)
+        {
+            var field = Consts.field.GetField;
+            var winLength = Consts.field.winLength;
+            var Size = Consts.field.Size;
+
+            switch (dir)
+            {
+                case Direction.Horizontal:
+                    {
+                        var max = y + winLength >= Size ? Size : y + winLength;
+                        for (var i = y; i < max; i++)
+                        {
+                            if (field[x, i] == Consts.field.EmptySymbol)
+                            {
+                                return (x, i);
+                            }
+                        }
+                        break;
+                    }
+                case Direction.Vertical:
+                    {
+                        var max = x + winLength >= Size ? Size : x + winLength;
+                        for (var i = x; i < max; i++)
+                        {
+                            if (field[i, y] == Consts.field.EmptySymbol)
+                            {
+                                return (i, y);
+                            }
+                        }
+                        break;
+                    }
+                case Direction.FirstDiagonalDown:
+                    {
+                        var maxX = x + winLength >= Size ? Size : x + winLength;
+                        var maxY = y + winLength >= Size ? Size : y + winLength;
+                        for (int i = 0, j = 0; i < maxX && j < maxY; i++, j++)
+                        {
+                            if (field[i, j] == Consts.field.EmptySymbol)
+                            {
+                                return (i, j);
+                            }
+                        }
+
+                        break;
+                    }
+                case Direction.FirstDiagonalUp:
+                    {
+                        var min = Size - winLength > 0 ? Size - winLength : 0;
+                        for (int i = Size - 1, j = Size - 1; i >= min && j >= min; i--, j--)
+                        {
+                            if (field[i, j] == Consts.field.EmptySymbol)
+                            {
+                                return (i, j);
+                            }
+                        }
+
+                        break;
+                    }
+                case Direction.SecondDiagonalDown:
+                    {
+                        var min = Size - winLength > 0 ? Size - winLength : 0;
+                        for (int i = 0, j = Size - 1; i < winLength && j >= min; i++, j--)
+                        {
+                            if (field[i, j] == Consts.field.EmptySymbol)
+                            {
+                                return (i, j);
+                            }
+                        }
+
+                        break;
+                    }
+                case Direction.SecondDiagonalUp:
+                    {
+                        var min = Size - winLength > 0 ? Size - winLength : 0;
+                        for (int i = Size - 1, j = 0; i >= min && j < winLength; i--, j++)
+                        {
+                            if (field[i, j] == Consts.field.EmptySymbol)
+                            {
+                                return (i, j);
+                            }
+                        }
+
+                        break;
+                    }
+            }
+
+            return (-1, -1);
+        }
+
+        class Sequence
+        {
+            public int startX { get; private set; }
+            public int startY { get; private set; }
+            public Direction dir { get; private set; }
+
+            public Sequence(int startX, int startY, Direction dir)
+            {
+                this.startX = startX;
+                this.startY = startY;
+                this.dir = dir;
+            }
         }
     }
 }
