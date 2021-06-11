@@ -133,11 +133,12 @@ namespace Lesson7
                         }
                         break;
                     }
-                case Direction.FirstDiagonalDown:
+                case Direction.DiagonalDown:
                     {
                         var maxX = x + winLength >= Size ? Size : x + winLength;
                         var maxY = y + winLength >= Size ? Size : y + winLength;
-                        for (int i = 0, j = 0; i < maxX && j < maxY; i++, j++)
+
+                        for (int i = x, j = y; i < maxX && j < maxY; i++, j++)
                         {
                             if (field[i, j] == sym)
                             {
@@ -147,36 +148,11 @@ namespace Lesson7
 
                         break;
                     }
-                case Direction.FirstDiagonalUp:
+                case Direction.DiagonalUp:
                     {
-                        var min = Size - winLength > 0 ? Size - winLength : 0;
-                        for (int i = Size - 1, j = Size - 1; i >= min && j >= min; i--, j--)
-                        {
-                            if (field[i, j] == sym)
-                            {
-                                sequenceSize++;
-                            }
-                        }
-
-                        break;
-                    }
-                case Direction.SecondDiagonalDown:
-                    {
-                        var min = Size - winLength > 0 ? Size - winLength : 0;
-                        for (int i = 0, j = Size - 1; i < winLength && j >= min; i++, j--)
-                        {
-                            if (field[i, j] == sym)
-                            {
-                                sequenceSize++;
-                            }
-                        }
-
-                        break;
-                    }
-                case Direction.SecondDiagonalUp:
-                    {
-                        var min = Size - winLength > 0 ? Size - winLength : 0;
-                        for (int i = Size - 1, j = 0; i >= min && j < winLength; i--, j++)
+                        var minY = y - winLength > 0 ? y - winLength : 0;
+                        var maxX = x + winLength >= Size ? Size : x + winLength;
+                        for (int i = x, j = y; i < maxX && j >= minY; i++, j--)
                         {
                             if (field[i, j] == sym)
                             {

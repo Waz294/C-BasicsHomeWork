@@ -10,9 +10,7 @@ namespace Lesson7
     {
         Horizontal,
         Vertical,
-        FirstDiagonalDown,
-        FirstDiagonalUp,
-        SecondDiagonalDown,
-        SecondDiagonalUp
+        DiagonalDown,
+        DiagonalUp
     }
 }
